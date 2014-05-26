@@ -106,6 +106,7 @@ void slowLoop()
   //duty cycle %
   //check magnetic heading?
   //accelgyro.getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &mx, &my, &mz);
+  sendSerial();
 }
 
 void fastLoop()
@@ -137,7 +138,7 @@ void fastLoop()
    //dataTx[DataTxNumValidPackets] = numValidPackets;
    //dataTx[DataTxNumFailedPackets] = numFailedPackets;
    
-    sendSerial();
+    
 }
 
 unsigned long lastFastLoopTimeStamp = 0;
@@ -155,17 +156,17 @@ void loop()
   if (10000 < (time - lastFastLoopTimeStamp)) 
   {
     lastFastLoopTimeStamp = time;
-    fastLoop(); // gets calles every 1/100s
+    fastLoop(); // get calls every 1/100s
     fastLoopDuration = micros() - time;
   }
   
-  if (1000000 < (time - lastSlowLoopTimeStamp)) 
+  if (100000 < (time - lastSlowLoopTimeStamp)) 
   {
     lastSlowLoopTimeStamp = time;
-    slowLoop(); // gets calles every 1s
+    slowLoop(); // get calls every 1s
     slowLoopDuration = micros() - time;
     
-    dutyTime = (fastLoopDuration / 100) + (slowLoopDuration / 10000); //TODO: beräknas det helt rätt? acc
+    dutyTime = (fastLoopDuration / 100) + (slowLoopDuration / 1000); //TODO: beräknas det helt rätt? acc
   }
   
   
