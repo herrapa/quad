@@ -45,36 +45,6 @@ void readSerial()
       }
     }
   }
-  
-  
-  
-  /*
-    while (Serial.available() > 0)
-    {
-      byte inByte = Serial.read() & 0xFF;
-      if (enableRead)
-      {
-          arr[bytesRead] = inByte;
-          bytesRead++;
-          
-          if (inByte == 0xCC && arr[0] == 0xAA)//)//end byte or too much data
-        {
-          if (bytesRead > 6)
-          {
-            parsePayload();
-          }
-        }
-      }
-      
-      if (inByte == 0xAA)//start byte
-      {
-        bytesRead = 0;
-        arr[0] = inByte;
-        bytesRead++;
-        enableRead = 1;
-      }
-    }
-    */
 }
 
 void parseData(byte* rawPacket, int length)
@@ -116,6 +86,17 @@ void parseData(byte* rawPacket, int length)
     return;
   }
   numValidPackets++;
+  
+  int packetLength = packetPos-1; //The length without the checksum
+  
+  //Transfer all data
+  int dataField = 0;
+  for (int i = 0; i < packetLength; i += 2) {
+    dataRx[dataField] = (rawPacket[i] << 8) | rawPacket[i+1];
+    dataField++;
+  }
+  
+  sendSerial();
   //TODO: data -> array
 }
 

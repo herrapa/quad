@@ -8,7 +8,7 @@ byte STX_BYTE = (byte)0xAA;
 byte ESC_BYTE = (byte)0xBB;
 byte ETX_BYTE = (byte)0xCC;
 
-int SERIAL_PORT_NO = 1;
+int SERIAL_PORT_NO = 2;
 
 int numValidPackets = 0;
 int numFailedPackets = 0;
@@ -122,12 +122,7 @@ void setup()
 
 void draw()
 {
-  //timePassed = millis();
-  //background(255);
-  
   readSerial();
-  
-  doMath();
   
   if(button0.pressed())
   {
@@ -140,30 +135,26 @@ void draw()
   }
   
   totalX = constrain(totalX + leftStick.getX() * 5.0,10,width-10);
-  xAxis = (char)map(leftStick.getX(), -1.0, 1.0, 0, 180);
-  //println(stick.getX());
-  //myPort.write(xAxis);
-  totalY = constrain(totalY + leftStick.getY() * 5.0,10,height-10);
   
+  int thrust = (int)map(leftStick.getY(), -1.0, 0.0, 1000, 0);
+  thrust = max(thrust, 0);
+  dataTx[DataTxControlThrust] = thrust;
+  
+  int yaw = (int)map(leftStick.getX(), -1.0, 1.0, 500, -500);
+  dataTx[DataTxControlYaw] = yaw;
+  
+  int pitch = (int)map(rightStick.getY(), -1.0, 1.0, 500, -500);
+  dataTx[DataTxControlPitch] = pitch;
+  int roll = (int)map(rightStick.getX(), -1.0, 1.0, 500, -500);
+  dataTx[DataTxControlRoll] = roll;
+  
+  totalY = constrain(totalY + leftStick.getY() * 5.0,10,height-10);
   totalZ = constrain(totalZ + rightStick.getX() * 5.0,10,width-10);
   totalZR = constrain(totalZR + rightStick.getY() * 5.0,10,height-10);
   
-  //checkSerial();
-  
-  //sendJoystickSerial(leftStick.getY(), leftStick.getX(), rightStick.getY(), rightStick.getX());
+  sendSerial();
   
   drawHud();
   
-  sendSerial();
   
-  //rect(totalX,totalY,20,20);
-  //translate(totalX,totalY);
-  //rotate(rightStick.getX());
-  //println(totalZ/20);
-  //rect(0,0,20,20);
-  
-  
-  //ellipse(totalZ,totalZR,20,20);
-  
-  //delay(10 - (millis() - timePassed)); //100Hz
 }

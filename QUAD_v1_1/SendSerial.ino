@@ -70,22 +70,18 @@ void sendSerial()
   
   txBuffer[packetPos++] = STX_BYTE; //Start byte
   //txBuffer[packetPos] = NumDataTxFields*2; //Payload lenght, manually make sure this is not a control byte
-  checksum += txBuffer[packetPos-1]; 
+  //checksum += txBuffer[packetPos++]; 
 
   for (int i = 0; i < NumDataTxFields; i++)
   {
-    //Serial.print("i: ");
-    //Serial.println(i);
-    //Serial.print("packetPos: ");
-    //Serial.println(packetPos);
     //High byte
-    txBuffer[packetPos] = (byte)(dataTx[i] / 256);
+    txBuffer[packetPos] = (byte)((dataTx[i] >> 8) & 0x00FF);
     checksum += txBuffer[packetPos]; //Checksum calced before escaping occurs..
     //Insert escape-pattern if value happens to be a control byte
     escapeIfNeededAndIncrement(txBuffer, &packetPos);
     
     //Low byte
-    txBuffer[packetPos] = (byte)(dataTx[i] % 256);
+    txBuffer[packetPos] = (byte)(dataTx[i] & 0x00FF);
     checksum += txBuffer[packetPos];
     escapeIfNeededAndIncrement(txBuffer, &packetPos);
   }
@@ -94,11 +90,7 @@ void sendSerial()
   escapeIfNeededAndIncrement(txBuffer, &packetPos);
   
   txBuffer[packetPos++] = ETX_BYTE; //End byte
-  //Serial.print("packetPos: ");
-  //Serial.println(packetPos);
   int bytesSent = Serial.write(txBuffer, packetPos);
-  //Serial.print("Bytes Sent: ");
-  //Serial.println(bytesSent);
   if (bytesSent != packetPos)
   {
     //Serial.println("Packet Failed");

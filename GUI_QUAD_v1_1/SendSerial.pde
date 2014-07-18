@@ -1,31 +1,25 @@
 
-
-//#include "SerialGlobal.h"
-
 byte[] txBuffer = new byte[NumDataTxFields * 4 + 4];
-
 
 void sendSerial()
 {
-  
   //Calc checksum on the fly
   byte checksum = 0; 
   int packetPos = 0;
   
   txBuffer[packetPos++] = STX_BYTE; //Start byte
-  //txBuffer[packetPos] = NumDataTxFields*2; //Payload lenght, manually make sure this is not a control byte
-  checksum += txBuffer[packetPos++]; 
-
+  
   for (int i = 0; i < NumDataTxFields; i++)
   {
     //High byte
-    txBuffer[packetPos] = (byte)(dataTx[i] / 256);
+    short value = (short)dataTx[i]; //typecast 32-bit int to 16-bit short to preserve sign-bit
+    txBuffer[packetPos] = (byte)((value >> 8) & 0x00FF);
     checksum += txBuffer[packetPos]; //Checksum calced before escaping occurs..
     //Insert escape-pattern if value happens to be a control byte
     packetPos = escapeIfNeededAndIncrement(txBuffer, packetPos);
     
     //Low byte
-    txBuffer[packetPos] = (byte)(dataTx[i] % 256);
+    txBuffer[packetPos] = (byte)(value & 0x00FF);
     checksum += txBuffer[packetPos];
     packetPos = escapeIfNeededAndIncrement(txBuffer, packetPos);
   }
@@ -37,12 +31,6 @@ void sendSerial()
   txBuffer[packetPos++] = ETX_BYTE; //End byte
 
   myPort.write(txBuffer);
-  /*int bytesSent = Serial.write(txBuffer);
-  if (bytesSent != packetPos)
-  {
-    numFailedPackets++;
-  }
-  */
 }
 
 int escapeIfNeededAndIncrement(byte[] buffer, int pos)

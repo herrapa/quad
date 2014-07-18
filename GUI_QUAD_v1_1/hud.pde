@@ -15,11 +15,12 @@ float hudCircleSize = hudHorizonLineSize * 2.0 + 20.0;
 
 void drawHud ()
 {
+  //println(dataRx[DataRxAngleX] / 91.0f);
   float thrust = leftStick.getY();
   float yaw = leftStick.getX();
-  float pitch = (float)dataRx[DataRxAngleX] / 91.0 * DEG_TO_RAD - PI;//prevXAngle;
-  float roll = (float)dataRx[DataRxAngleY] / 91.0 * DEG_TO_RAD;//prevYAngle;
-  
+  float pitch = (((float)dataRx[DataRxAngleX]) * 0.00019179442f);// - PI;//prevXAngle;
+  float roll = ((float)dataRx[DataRxAngleY]) * 0.00019179442f;/// 91.0f * DEG_TO_RAD;//prevYAngle;
+  //println(pitch);
   float centerX = width/2;
   float centerY = height/2;
   
@@ -47,8 +48,8 @@ void drawHud ()
 
   int thrustInt = (int)(-thrust * 100.0);
 
-  bkgPosY = (pitch) * 200;
-  bkgPosX = yaw * 200;
+  bkgPosY = (pitch) * 200.0f;
+  bkgPosX = yaw * 200.0f;
 
   pushMatrix();
 
@@ -139,10 +140,10 @@ void drawHud ()
   text(st, 100, 515);
   
   text("X: ", 35, 545);
-  st = "" + dataRx[DataRxAngleX];
+  st = "" + pitch;
   text(st, 100, 545);
   text("Y: ", 35, 575);
-  st = "" + dataRx[DataRxAngleY];
+  st = "" + roll;
   text(st, 100, 575);
 
 
