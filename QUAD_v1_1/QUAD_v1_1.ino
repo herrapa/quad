@@ -4,6 +4,8 @@
 
 #include <MsTimer2.h>
 
+#include <avr/wdt.h>
+
 #define INBUFFER_SIZE 15 //serial inbuffer
 #define STATUS_LED 13
 #define BATTERY_LEVEL_PIN 0
@@ -63,26 +65,38 @@ void setup()
   memset(pidControllerErrorSum, 0, sizeof(pidControllerErrorSum));
   memset(pidControllerLastError, 0, sizeof(pidControllerLastError));
 
+  wdt_enable (WDTO_1S);  // reset after one second, if no "pat the dog" received
+
   timeCounter = micros();
 }
 
 void controlLoop()
 {
-  float controlPitch = calculatePID(PIDControllerPitch, dataRx[DataRxControlPitch] - get_last_y_angle(), 1.0, 0.0, 100.0);
-  dataTx[DataTxDutyTime] = controlPitch;
+  float controlPitch = calculatePID(PIDControllerPitch, (float)dataRx[DataRxControlPitch] - (get_last_y_angle() * 2.7778), 1.0, 0.0, -10.0);
+  //dataTx[DataTxDutyTime] = controlPitch;
   
   int thrust = 1000 + dataRx[DataRxControlThrust];
-
+  dataTx[DataTxDutyTime] = controlPitch;
   int frontThrust = max(1000, thrust - controlPitch);
   int rearThrust = max(1000, thrust + controlPitch);
 
   int leftThrust = max(1000, thrust - dataRx[DataRxControlRoll]);
   int rightThrust = max(1000, thrust + dataRx[DataRxControlRoll]);
 
-  frontMotor.writeMicroseconds(frontThrust);
-  rearMotor.writeMicroseconds(rearThrust);
+  if (1000 < thrust) //sageguard
+  {
+    frontMotor.writeMicroseconds(frontThrust);
+    rearMotor.writeMicroseconds(rearThrust);
 //  leftMotor.writeMicroseconds(leftThrust);
 //  rightMotor.writeMicroseconds(rightThrust);
+  }
+  else
+  {
+    frontMotor.writeMicroseconds(1000);
+    rearMotor.writeMicroseconds(1000);
+//  leftMotor.writeMicroseconds(1000);
+//  rightMotor.writeMicroseconds(1000);
+  }
 }
 
 float calculatePID(byte controller, float error, float kp, float ki, float kd) {
@@ -106,6 +120,9 @@ void slowLoop()
 
 void fastLoop()
 {
+  
+  wdt_reset ();  // reset watchdog timer
+  
   // read raw accel/gyro measurements from device
   if (signalLostCounter++ > SIGNAL_ERROR_ALLOWANCE)
   {

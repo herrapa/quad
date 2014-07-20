@@ -18,8 +18,8 @@ public class SerialEventManager {
     private int numValidPackets = 0;
     private int numFailedPackets = 0;
 
-    private short[] dataRx;
-    private short[] dataTx;
+    private int[] dataRx;
+    private int[] dataTx;
 
     private boolean startByteFound = false;
 
@@ -63,8 +63,8 @@ public class SerialEventManager {
 
     public SerialEventManager(String port, int baudRate) {
         myPort = new Serial(port, baudRate);
-        dataRx = new short[DataRxEnum.NumDataRxFields.value];
-        dataTx = new short[DataTxEnum.NumDataTxFields.value];
+        dataRx = new int[DataRxEnum.NumDataRxFields.value];
+        dataTx = new int[DataTxEnum.NumDataTxFields.value];
         txBuffer = new byte[DataTxEnum.NumDataTxFields.value * 4 + 4];
         rxBuffer = new byte[RX_BUFFER_SIZE];
         packetBuffer = new byte[RX_BUFFER_SIZE];
@@ -136,6 +136,7 @@ public class SerialEventManager {
                         packetPos++;
                         break;
                     default:
+                        System.out.println("failed packet");
                         numFailedPackets++;
                         return;
                 }
@@ -151,6 +152,7 @@ public class SerialEventManager {
         checksum -= receivedChecksum; //SUBTRACT THE received unescaped checksum
         if (receivedChecksum != checksum)
         {
+            System.out.println("failed packet");
             numFailedPackets++;
             return;
         }
@@ -162,7 +164,14 @@ public class SerialEventManager {
         int dataField = 0;
         for (int i = 0; i < packetLength; i += 2)
         {
-            dataRx[dataField] = (short)((rawPacket[i] << 8) | (rawPacket[i+1] & 0x000000FF)); //TODO:funkart?
+
+
+            dataRx[dataField] = (rawPacket[i] << 8) | (rawPacket[i+1] & 0x000000FF); //TODO:funkart?
+            /*
+            if (dataField == DataRxEnum.DataRxDutyTime.value) {
+                System.out.println(Integer.toBinaryString(dataRx[dataField]) + " " + Integer.toBinaryString(rawPacket[i]) + " " + Integer.toBinaryString(rawPacket[i+1]));
+            }
+            */
             dataField++;
         }
     }
@@ -187,6 +196,12 @@ public class SerialEventManager {
             txBuffer[packetPos] = (byte)(value & 0x00FF);
             checksum += txBuffer[packetPos];
             packetPos = escapeIfNeededAndIncrement(txBuffer, packetPos);
+            /*
+            if (i == DataTxEnum.DataTxControlPitch.value) {
+                System.out.println("send: " + txBuffer[packetPos - 2] + " " + txBuffer[packetPos - 1] + " " + dataTx[i]);
+            }
+            */
+
         }
 
         //Insert checksum
@@ -212,16 +227,28 @@ public class SerialEventManager {
         return pos;
     }
 
-    public short getRxFieldOfType(DataRxEnum type) {
+    public int getRxFieldOfType(DataRxEnum type) {
         return dataRx[type.value];
     }
 
-    public void setTxFieldOfType(DataTxEnum type, short value) {
+    public void setTxFieldOfType(DataTxEnum type, int value) {
         dataTx[type.value] = value;
+    }
+
+    public int getTxFieldOfType(DataTxEnum type) {
+        return dataTx[type.value];
     }
 
     public void stop() {
         myPort.dispose();
+    }
+
+    public int getNumValidPackets() {
+        return numValidPackets;
+    }
+
+    public int getNumFailedPackets() {
+        return numFailedPackets;
     }
 
 }

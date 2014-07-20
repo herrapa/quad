@@ -70,11 +70,11 @@ public class ControllerManager {
 
         //Thrust
         if (axisThrustIsInitialized){
-            axisThrustValue = controller.getAxisValue(2);
+            axisThrustValue = controller.getAxisValue(1);
         }
-        else if (!axisThrustIsInitialized && (controller.getAxisValue(2) != -1.0f)) {
+        else if (!axisThrustIsInitialized && (controller.getAxisValue(1) != -1.0f)) {
             axisThrustIsInitialized = true;
-            axisThrustValue = controller.getAxisValue(2);
+            axisThrustValue = controller.getAxisValue(1);
         }
 
         //Yaw
@@ -97,11 +97,11 @@ public class ControllerManager {
 
         //Roll
         if (axisRollIsInitialized){
-            axisThrustValue = controller.getAxisValue(1);
+            axisThrustValue = controller.getAxisValue(2);
         }
-        else if (!axisRollIsInitialized && (controller.getAxisValue(1) != -1.0f)) {
+        else if (!axisRollIsInitialized && (controller.getAxisValue(2) != -1.0f)) {
             axisRollIsInitialized = true;
-            axisRollValue = controller.getAxisValue(1);
+            axisRollValue = controller.getAxisValue(2);
         }
     }
 
